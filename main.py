@@ -2,7 +2,7 @@ from flask import Flask, jsonify, Response, escape, request, render_template
 import openai
 import json
 
-openai.api_key = "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"
+openai.api_key = "YOU_KEY"
 
 app = Flask(__name__)
 messages = []
