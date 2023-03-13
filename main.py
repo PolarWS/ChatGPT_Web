@@ -3,6 +3,7 @@ import openai
 import json
 
 openai.api_key = "YOU_KEY"
+serverPort = "PORT"
 
 app = Flask(__name__)
 messages = []
@@ -28,7 +29,6 @@ def gptBot():
             for chunk in completion:
                 data_dict = json.loads(json.dumps(chunk, ensure_ascii=False))
                 try:
-                    print(data_dict["choices"][0]["delta"]["content"], end="")
                     yield data_dict["choices"][0]["delta"]["content"]
                 except:
                     yield ""
@@ -39,4 +39,4 @@ def gptBot():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=serverPort)

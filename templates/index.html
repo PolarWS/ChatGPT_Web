@@ -46,10 +46,11 @@
         const messageInput = $("#message-input");
         const myProgressBar = $("#myProgressBar");
         const clearBtn = $('#clear-btn');
+        var sendControl = true;
 
         $(document).ready(function () {
             messageInput.keydown(function (event) {
-                if (event.keyCode == 13 && !event.shiftKey) {
+                if (event.keyCode == 13 && !event.shiftKey && sendControl) {
                     event.preventDefault();
                     $('button[type="submit"]').click();
                 }
@@ -72,6 +73,7 @@
             }
             $('.btn').prop('disabled', true);
             chatWindow.append("<li class='list-group-item'><b>我:</b> " + $("<div>").text(message).html() + "</li>").hide().fadeIn();;
+            sendControl = false;
             myProgressBar.show();
             messageInput.val("");
             fetch('/get_response', {
@@ -98,24 +100,19 @@
                     });
 
                     chatWindow.append("<li class='list-group-item' id='" + answer + "'><b>ChatGPT:</b></li>").hide().fadeIn();
-                    // 用event stream方式读取响应
                     reader.read().then(function processText({ done, value }) {
                         if (done) {
-                            // console.log('Stream finished');
-                            // console.log(msgMd);
-                            const htmlmd = md.render(msgMd);
-                            $('#' + answer).html(htmlmd);
+                            $('#' + answer).html("<b>ChatGPT:</b> " + md.render(msgMd));
                             $('.btn').prop('disabled', false);
                             myProgressBar.hide();
+                            sendControl = true;
                             return;
                         }
-                        // 获取到新的消息时执行回调函数
                         result = decoder.decode(value);
                         const messages = result.split('');
                         messages.forEach(msg => {
                             msgMd += msg;
-                            const htmlmd = md.render(msgMd);
-                            $('#' + answer).html(htmlmd);
+                            $('#' + answer).html("<b>ChatGPT:</b> " + md.render(msgMd));
                         });
                         result = messages.pop();
                         reader.read().then(processText);
@@ -125,12 +122,13 @@
                     chatWindow.append("<li class='list-group-item text-danger'>发送消息失败</li>").hide().fadeIn();
                     $('.btn').prop('disabled', false);
                     myProgressBar.hide();
+                    sendControl = true;
                 });
         });
 
         function randomString(len) {
             len = len || 32;
-            var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';    /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+            var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
             var maxPos = $chars.length;
             var pwd = '';
             for (i = 0; i < len; i++) {
