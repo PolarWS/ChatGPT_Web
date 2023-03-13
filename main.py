@@ -10,7 +10,7 @@ messages = []
 
 @app.route('/')
 def home():
-    return render_template('index2.html')
+    return render_template('index.html')
 
 
 @app.route('/get_response', methods=['POST'])
@@ -28,6 +28,7 @@ def gptBot():
             for chunk in completion:
                 data_dict = json.loads(json.dumps(chunk, ensure_ascii=False))
                 try:
+                    print(data_dict["choices"][0]["delta"]["content"], end="")
                     yield data_dict["choices"][0]["delta"]["content"]
                 except:
                     yield ""

@@ -1,51 +1,145 @@
+<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	<title>ChatGPT demo</title>
-	
-	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/common.css') }}">
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/wenda.css') }}">
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/hightlight.css') }}">
-
+    <title>ChatGPT</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://polarws.moe/poi.ico" />
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
 </head>
 
 <body>
-	<div class="layout-wrap">
-		<div class="layout-content">
-			<div class="container">
-				<article class="article" id="article">
-					<div class="article-box">
-			
-						<ul id="article-wrapper">
-						</ul>
-						<div class="creating-loading" data-flex="main:center dir:top cross:center">
-							<div class="semi-circle-spin"></div>
-						</div>
-						<div id="fixed-block">
-							<div class="precast-block" id="kw-target-box" data-flex="main:left cross:center">
-								<div id="target-box" class="box">
-									<input type="text" name="kw-target" placeholder="请提问,发送q清空对话" id="kw-target" autofocus>
-								</div>
-								<div class="right-btn layout-bar">
-									<p class="btn ai-btn bright-btn" id="ai-btn" data-flex="main:center cross:center"><i class="iconfont icon-wuguan"></i></p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</article>
-			</div>
-		</div>
-	</div>
-	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/jquery.cookie.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/layer.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/showdown.min.js') }}"></script>
+    <div class="container chat-window">
+        <div class="card">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">渡渡鸦的CHATGPT</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group" id="chat-window"></ul>
+                <form id="message-form">
+                    <div class="input-group mb-3">
+                        <textarea class="form-control" id="message-input" placeholder="输入消息，发送q清空对话框"
+                            autocomplete="off"></textarea>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">发送</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="progress" id="myProgressBar">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const chatWindow = $("#chat-window");
+        const messageForm = $("#message-form");
+        const messageInput = $("#message-input");
+        const myProgressBar = $("#myProgressBar");
+        const clearBtn = $('#clear-btn');
+
+        $(document).ready(function () {
+            messageInput.keydown(function (event) {
+                if (event.keyCode == 13 && !event.shiftKey) {
+                    event.preventDefault();
+                    $('button[type="submit"]').click();
+                }
+            });
+        });
+
+        myProgressBar.hide();
+
+        $('button[type="submit"]').on('click', function (event) {
+            event.preventDefault();
+
+            const message = messageInput.val();
+
+            if (!message) {
+                return;
+            } else if (message == "q") {
+                messageInput.val('');
+                chatWindow.empty();
+                return;
+            }
+            $('.btn').prop('disabled', true);
+            chatWindow.append("<li class='list-group-item'><b>我:</b> " + $("<div>").text(message).html() + "</li>").hide().fadeIn();;
+            myProgressBar.show();
+            messageInput.val("");
+            fetch('/get_response', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'message': message
+                })
+            })
+                .then(response => {
+                    const reader = response.body.getReader();
+                    let decoder = new TextDecoder("utf-8");
+                    let result = '';
+                    let msgMd = '';
+                    let answer = randomString(16);
+                    const md = new markdownit({
+                        highlight: function (str, lang) {
+                            if (lang && hljs.getLanguage(lang)) {
+                                try {
+                                    return hljs.highlight(lang, str).value;
+                                } catch (__) { }
+                            }
+                            return "";
+                        },
+                    });
+
+                    chatWindow.append("<li class='list-group-item' id='" + answer + "'><b>ChatGPT:</b></li>").hide().fadeIn();
+                    // 用event stream方式读取响应
+                    reader.read().then(function processText({ done, value }) {
+                        if (done) {
+                            // console.log('Stream finished');
+                            // console.log(msgMd);
+                            const htmlmd = md.render(msgMd);
+                            $('#' + answer).html(htmlmd);
+                            $('.btn').prop('disabled', false);
+                            myProgressBar.hide();
+                            return;
+                        }
+                        // 获取到新的消息时执行回调函数
+                        result = decoder.decode(value);
+                        const messages = result.split('');
+                        messages.forEach(msg => {
+                            msgMd += msg;
+                            const htmlmd = md.render(msgMd);
+                            $('#' + answer).html(htmlmd);
+                        });
+                        result = messages.pop();
+                        reader.read().then(processText);
+                    });
+                })
+                .catch(error => {
+                    chatWindow.append("<li class='list-group-item text-danger'>发送消息失败</li>").hide().fadeIn();
+                    $('.btn').prop('disabled', false);
+                    myProgressBar.hide();
+                });
+        });
+
+        function randomString(len) {
+            len = len || 32;
+            var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';    /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+            var maxPos = $chars.length;
+            var pwd = '';
+            for (i = 0; i < len; i++) {
+                pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+            }
+            return pwd;
+        }
+    </script>
+
 </body>
 
 </html>
