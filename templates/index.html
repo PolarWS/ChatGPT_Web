@@ -28,7 +28,8 @@
                         <textarea class="form-control" id="message-input" placeholder="输入消息，发送q清空对话框"
                             autocomplete="off"></textarea>
                         <div class="input-group-append">
-                            <button class="btn btn-primary" type="submit">发送</button>
+                            <button class="btn btn-primary" id="stopbut">停止</button>
+                            <button class="btn btn-primary" id="submit">发送</button>
                         </div>
                     </div>
                 </form>
@@ -41,60 +42,67 @@
         </div>
     </div>
     <script>
-        // DOM元素选择器，用于获取和操作页面元素
-        const chatWindow = $("#chat-window"); // 聊天窗口
-        const messageForm = $("#message-form"); //消息输入表单
-        const messageInput = $("#message-input"); // 消息输入框
-        const myProgressBar = $("#myProgressBar"); // 页面加载进度条
-        const clearBtn = $('#clear-btn'); // 清空聊天记录按钮
-
-        // 控制发送按钮的状态
+        const chatWindow = $("#chat-window");
+        const messageForm = $("#message-form");
+        const messageInput = $("#message-input");
+        const myProgressBar = $("#myProgressBar");
+        const stopbut = $("#stopbut");
+        const clearBtn = $('#clear-btn');
+        const submit = $('#submit')
+        var originalHeight = messageInput.height();
         var sendControl = true;
-
-        // 存储聊天消息的数组
+        var stopsend = false;
         let messages = [];
+        stopbut.hide();
+        myProgressBar.hide();
 
-        // 当页面DOM加载完成后执行以下函数
         $(document).ready(function () {
-            // 监听消息输入框的回车事件，使其可以通过回车键发送消息
+            messageInput.on('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight + 5) + 'px';
+            }).trigger('input');
+        });
+
+        $(document).ready(function () {
             messageInput.keydown(function (event) {
                 if (event.keyCode == 13 && !event.shiftKey && sendControl) {
                     event.preventDefault();
-                    $('button[type="submit"]').click();
+                    submit.click();
                 }
             });
         });
 
-        // 隐藏页面加载进度条
-        myProgressBar.hide();
+        stopbut.on('click', function (event) {
+            event.preventDefault();
+            submit.prop('disabled', false);
+            stopbut.hide();
+            myProgressBar.hide();
+            sendControl = true;
+            stopsend = true;
+        });
 
-        // 监听“发送”按钮被点击时执行以下函数
-        $('button[type="submit"]').on('click', function (event) {
-            event.preventDefault(); // 阻止表单默认提交行为
-
-            const message = messageInput.val(); // 获取消息内容
-
-            // 如果消息为空，则不做任何操作
+        submit.on('click', function (event) {
+            event.preventDefault();
+            const message = messageInput.val();
+            messageInput.height(originalHeight);
             if (!message) {
                 return;
-            } else if (message == "q") { // 如果消息为“q”，则清空聊天记录并退出
+            } else if (message == "q") {
+                messages = [];
                 messageInput.val('');
                 chatWindow.empty();
                 return;
             }
 
-            // 将消息存入数组messages中，截取最近的6个消息
             messages = messages.slice(-6);
             messages.push({ 'role': 'user', 'content': message });
 
-            $('.btn').prop('disabled', true); // 禁用发送按钮
-            // 在聊天窗口显示消息发送者以及发送的消息内容
+            submit.prop('disabled', true);
             chatWindow.append("<li class='list-group-item'><b>我:</b> " + $("<div>").text(message).html() + "</li>").hide().fadeIn();;
             sendControl = false;
-            myProgressBar.show(); // 显示页面加载进度条
-            messageInput.val(""); // 清空消息输入框内容
-
-            // 向后台发送消息请求
+            myProgressBar.show();
+            stopbut.show();
+            messageInput.val("");
             fetch('/get_response', {
                 method: 'POST',
                 body: new URLSearchParams({
@@ -118,15 +126,18 @@
                             return "";
                         },
                     });
-                    // 在聊天窗口显示机器人角色，并为其设置ID属性
+
                     chatWindow.append("<li class='list-group-item' id='" + answer + "'><b>ChatGPT:</b></li>").hide().fadeIn();
-                    // 读取从服务器返回的文本
                     reader.read().then(function processText({ done, value }) {
                         if (done) {
                             $('#' + answer).html("<b>ChatGPT:</b> " + md.render(msgMd));
-                            $('.btn').prop('disabled', false);
+                            submit.prop('disabled', false);
+                            stopbut.hide();
                             myProgressBar.hide();
                             sendControl = true;
+                            return;
+                        }
+                        if (stopsend) {
                             return;
                         }
                         result = decoder.decode(value);
@@ -141,13 +152,14 @@
                 })
                 .catch(error => {
                     chatWindow.append("<li class='list-group-item text-danger'>发送消息失败</li>").hide().fadeIn();
-                    $('.btn').prop('disabled', false);
+                    submit.prop('disabled', false);
+                    stopbut.hide();
                     myProgressBar.hide();
                     sendControl = true;
                 });
+            stopsend = false;
         });
 
-        // 生成指定长度的随机字符串
         function randomString(len) {
             len = len || 32;
             var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
