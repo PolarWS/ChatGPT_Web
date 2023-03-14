@@ -41,14 +41,22 @@
         </div>
     </div>
     <script>
-        const chatWindow = $("#chat-window");
-        const messageForm = $("#message-form");
-        const messageInput = $("#message-input");
-        const myProgressBar = $("#myProgressBar");
-        const clearBtn = $('#clear-btn');
+        // DOM元素选择器，用于获取和操作页面元素
+        const chatWindow = $("#chat-window"); // 聊天窗口
+        const messageForm = $("#message-form"); //消息输入表单
+        const messageInput = $("#message-input"); // 消息输入框
+        const myProgressBar = $("#myProgressBar"); // 页面加载进度条
+        const clearBtn = $('#clear-btn'); // 清空聊天记录按钮
+
+        // 控制发送按钮的状态
         var sendControl = true;
 
+        // 存储聊天消息的数组
+        let messages = [];
+
+        // 当页面DOM加载完成后执行以下函数
         $(document).ready(function () {
+            // 监听消息输入框的回车事件，使其可以通过回车键发送消息
             messageInput.keydown(function (event) {
                 if (event.keyCode == 13 && !event.shiftKey && sendControl) {
                     event.preventDefault();
@@ -57,29 +65,41 @@
             });
         });
 
+        // 隐藏页面加载进度条
         myProgressBar.hide();
 
+        // 监听“发送”按钮被点击时执行以下函数
         $('button[type="submit"]').on('click', function (event) {
-            event.preventDefault();
+            event.preventDefault(); // 阻止表单默认提交行为
 
-            const message = messageInput.val();
+            const message = messageInput.val(); // 获取消息内容
 
+            // 如果消息为空，则不做任何操作
             if (!message) {
                 return;
-            } else if (message == "q") {
+            } else if (message == "q") { // 如果消息为“q”，则清空聊天记录并退出
                 messageInput.val('');
                 chatWindow.empty();
                 return;
             }
-            $('.btn').prop('disabled', true);
+
+            // 将消息存入数组messages中，截取最近的6个消息
+            messages = messages.slice(-6);
+            messages.push({ 'role': 'user', 'content': message });
+
+            $('.btn').prop('disabled', true); // 禁用发送按钮
+            // 在聊天窗口显示消息发送者以及发送的消息内容
             chatWindow.append("<li class='list-group-item'><b>我:</b> " + $("<div>").text(message).html() + "</li>").hide().fadeIn();;
             sendControl = false;
-            myProgressBar.show();
-            messageInput.val("");
+            myProgressBar.show(); // 显示页面加载进度条
+            messageInput.val(""); // 清空消息输入框内容
+
+            // 向后台发送消息请求
             fetch('/get_response', {
                 method: 'POST',
                 body: new URLSearchParams({
-                    'message': message
+                    'message': message,
+                    'messages': JSON.stringify(messages)
                 })
             })
                 .then(response => {
@@ -98,8 +118,9 @@
                             return "";
                         },
                     });
-
+                    // 在聊天窗口显示机器人角色，并为其设置ID属性
                     chatWindow.append("<li class='list-group-item' id='" + answer + "'><b>ChatGPT:</b></li>").hide().fadeIn();
+                    // 读取从服务器返回的文本
                     reader.read().then(function processText({ done, value }) {
                         if (done) {
                             $('#' + answer).html("<b>ChatGPT:</b> " + md.render(msgMd));
@@ -126,6 +147,7 @@
                 });
         });
 
+        // 生成指定长度的随机字符串
         function randomString(len) {
             len = len || 32;
             var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
