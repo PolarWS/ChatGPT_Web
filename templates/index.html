@@ -11,11 +11,13 @@
     <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <!-- <script src="https://cdn.staticfile.org/markdown-it/13.0.1/markdown-it.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <!-- <script src="https://polarws.moe/chatgpt/js/markdown-it.min.js"></script> -->
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <!-- <script src="https://cdn.staticfile.org/highlight.js/11.7.0/es/highlight.min.js"></script> -->
-    <!-- <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/default.min.css"> -->
-    <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/11.7.0/styles/vs.min.css"> -->
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
+    <!-- <script src="https://polarws.moe/chatgpt/js/highlight.min.js"></script> -->
+    <!-- <link rel="stylesheet" href="https://polarws.moe/chatgpt/default.min.css"> -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/11.7.0/styles/vs.min.css">
     <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 
@@ -29,7 +31,7 @@
             </div>
             <div class="card-body">
                 <ul class="list-group" id="chat-window"></ul>
-                <div class="navbar-static-bottom">
+                <form id="message-form">
                     <div class="input-group mb-3">
                         <textarea class="form-control" id="message-input" placeholder="输入消息，发送q清空对话框"
                             autocomplete="off"></textarea>
@@ -37,15 +39,12 @@
                             <button class="btn btn-primary" id="stopbut">停止</button>
                             <button class="btn btn-primary" id="submit">发送</button>
                         </div>
-                        <div class="progress" id="myProgressBar">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-                            </div>
-                        </div>
                     </div>
-                    <!-- <form id="message-form"> -->
-
-                    <!-- </form> -->
+                </form>
+            </div>
+            <div class="progress" id="myProgressBar">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
                 </div>
             </div>
         </div>
@@ -89,16 +88,8 @@
         } else {
             $('#firstData').val($.cookie('firstData'));
         }
-
-
-        const windowHeight = window.innerHeight;
-        const headerHeight = document.querySelector(".card-header").offsetHeight;
-        const cardBody = document.querySelector(".card-body");
-        const cardBodyHeight = windowHeight - headerHeight - 20;
-        cardBody.style.height = cardBodyHeight + "px";
-
         const chatWindow = $("#chat-window");
-        // const messageForm = $("#message-form");
+        const messageForm = $("#message-form");
         const messageInput = $("#message-input");
         const txtbox = $("#headerData, #firstData");
         const stopbut = $("#stopbut");
@@ -165,7 +156,7 @@
             console.log(messages);
 
             submit.prop('disabled', true);
-            chatWindow.append("<li class='list-group-item list-group-item-action list-group-item-light'><b>我:</b> " + $("<div>").text(message).html() + "</li>").hide().fadeIn();
+            chatWindow.append("<li class='list-group-item bg-light'><b>我:</b> " + $("<div>").text(message).html() + "</li>").hide().fadeIn();
             sendControl = false;
             myProgressBar.show();
             stopbut.show();
