@@ -1,3 +1,4 @@
+</html>
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -24,15 +25,15 @@
 <body>
     <div class="container chat-window">
         <div class="card">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">渡渡鸦的CHATGPT</h6>
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between" id="topBox">
+                <h6 class="m-0 font-weight-bold text-primary"><a href="https://polarws.moe/" target="_blank">渡渡鸦的CHATGPT</a></h6>
                 <button data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo" type="button"
                     class="btn btn-outline-secondary">设置</button>
             </div>
-            <div class="card-body">
+            <div class="card-body d-flex flex-column justify-content-between flex-grow-1">
                 <ul class="list-group" id="chat-window"></ul>
-                <form id="message-form">
-                    <div class="input-group mb-3">
+                <form id="message-form" class="mt-auto mb-0">
+                    <div class="input-group">
                         <textarea class="form-control" id="message-input" placeholder="输入消息，发送q清空对话框"
                             autocomplete="off"></textarea>
                         <div class="input-group-append">
@@ -88,6 +89,12 @@
         } else {
             $('#firstData').val($.cookie('firstData'));
         }
+
+        const windowHeight = window.innerHeight;
+        const headerHeight = document.querySelector(".card-header").offsetHeight;
+        const cardBody = document.querySelector(".card-body");
+        let cardBodyHeight = windowHeight - headerHeight - headerHeight/2;
+
         const chatWindow = $("#chat-window");
         const messageForm = $("#message-form");
         const messageInput = $("#message-input");
@@ -106,6 +113,10 @@
         stopbut.hide();
         myProgressBar.hide();
 
+        window.onload = function() {
+            autobox();
+        }
+
         $("#setSave").on('click', function () {
             headerData = $("#headerData").val();
             firstData = $("#firstData").val();
@@ -117,6 +128,8 @@
         messageInput.on('input', function () {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight + 5) + 'px';
+            autobox();
+            window.scrollTo(0, document.body.scrollHeight);
         }).trigger('input');
 
         txtbox.height(100);
@@ -157,6 +170,8 @@
 
             submit.prop('disabled', true);
             chatWindow.append("<li class='list-group-item bg-light'><b>我:</b> " + $("<div>").text(message).html() + "</li>").hide().fadeIn();
+            autobox();
+            window.scrollTo(0, document.body.scrollHeight);
             sendControl = false;
             myProgressBar.show();
             stopbut.show();
@@ -206,6 +221,7 @@
                         messages.forEach(msg => {
                             msgMd += msg;
                             $('#' + answer).html("<b>ChatGPT:</b> " + md.render(msgMd));
+                            autobox();
                         });
 
                         window.scrollTo(0, document.body.scrollHeight);
@@ -215,6 +231,7 @@
                 })
                 .catch(error => {
                     chatWindow.append("<li class='list-group-item text-danger'>发送消息失败</li>").hide().fadeIn();
+                    autobox();
                     submit.prop('disabled', false);
                     stopbut.hide();
                     myProgressBar.hide();
@@ -223,6 +240,15 @@
 
             stopsend = false;
         });
+
+        function autobox() {
+            if (chatWindow.height() + messageForm.height() >= cardBodyHeight) {
+                boxAuto = chatWindow.height() + messageForm.height() + headerHeight/2;
+                cardBody.style.height = boxAuto + "px";
+            } else {
+                cardBody.style.height = cardBodyHeight + "px";
+            }
+        }
 
         function randomString(len) {
             len = len || 32;
