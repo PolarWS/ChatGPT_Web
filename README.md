@@ -8,3 +8,7 @@
 python main.py
 ```
 启动你的脚本
+---
+###网页外观
+
+![外观](https://ls-1252580753.cos.ap-chengdu.myqcloud.com/%E7%BD%91%E9%A1%B5%E6%8D%95%E8%8E%B7_20-3-2023_123956_chatgpt.polarws.moe.jpeg)
