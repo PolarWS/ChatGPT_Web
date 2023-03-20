@@ -25,7 +25,7 @@ def gptBot():
         global messages
         # 把request.form['messages']转化成json对象
         messages = json.loads(request.form['messages'])
-        message = escape(request.form['message'])                 # 防止XXS攻击
+        message = escape(request.form['message'])
         completion = openai.ChatCompletion.create(                 # 调用OpenAI聊天接口
             model="gpt-3.5-turbo",                               # 使用GPT-3.5-turbo模型
             messages=messages,
