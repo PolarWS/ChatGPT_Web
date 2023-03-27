@@ -6,39 +6,76 @@
     <title>ChatGPT</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="https://polarws.moe/poi.ico" />
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <script src="https://cdn.staticfile.org/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/popper.js/2.11.6/umd/popper.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <!-- <script src="https://cdn.staticfile.org/markdown-it/13.0.1/markdown-it.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
-    <!-- <script src="https://polarws.moe/chatgpt/js/markdown-it.min.js"></script> -->
     <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-    <!-- <script src="https://cdn.staticfile.org/highlight.js/11.7.0/es/highlight.min.js"></script> -->
     <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
-    <!-- <script src="https://polarws.moe/chatgpt/js/highlight.min.js"></script> -->
-    <!-- <link rel="stylesheet" href="https://polarws.moe/chatgpt/default.min.css"> -->
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+        integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+        integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+        integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa"
+        crossorigin="anonymous"></script>
+
+    <script src="js/chatgptweb.js" defer></script>
+
     <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/11.7.0/styles/vs.min.css">
     <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 
 <body>
     <div class="container chat-window">
-        <div class="card">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between" id="topBox">
-                <h6 class="m-0 font-weight-bold text-primary"><a href="https://polarws.moe/" target="_blank">渡渡鸦的CHATGPT</a></h6>
-                <button data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo" type="button"
-                    class="btn btn-outline-secondary">设置</button>
-            </div>
+        <div class="card border-secondary mt-3">
             <div class="card-body d-flex flex-column justify-content-between flex-grow-1">
-                <ul class="list-group" id="chat-window"></ul>
-                <form id="message-form" class="mt-auto mb-0">
+                <li class='list-group-item border-0 border-bottom border-primary' id="chatgptLi">
+                    <button data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo" type="button"
+                        class="btn btn-outline-secondary" style="display:none;">设置</button>
+                    <p class="font-weight-bold text-primary" id="chatgptText">GPT-3.5</p>
+                    <p class="font-weight-bold text-secondary" id="chatText">
+                        ○ <a class="text-secondary" href="https://polarws.moe/"
+                            style="text-decoration: none;">本站由@渡渡鸦开发</a>
+                        <br>
+                        ○ 由openai提供api与技术支持
+                        <br>
+                        ○ <a class="text-secondary" href="https://github.com/PolarWS/ChatGPT_Web"
+                            style="text-decoration: none;">项目GitHub地址点此处文字</a>
+                        <br>
+                        ○ 使用Q+Enter清空聊天框
+                        <br>
+                        ○ 使用Shift+Enter换行
+                        <br>
+                        ○ 使用S+Enter打开设置
+                    </p>
+                </li>
+                <ul class="list-group" id="chat-window">
+                </ul>
+                <form id="message-form" class="mb-0">
                     <div class="input-group">
-                        <textarea class="form-control" id="message-input" placeholder="输入消息，发送q清空对话框"
+                        <textarea class="form-control border-secondary border-right-0" id="message-input"
                             autocomplete="off"></textarea>
                         <div class="input-group-append">
-                            <button class="btn btn-primary" id="stopbut">停止</button>
-                            <button class="btn btn-primary" id="submit">发送</button>
+                            <button class="btn btn-outline-secondary" id="stopbut">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                                    class="bi bi-slash-square" viewBox="0 0 16 16">
+                                    <path
+                                        d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                                    <path
+                                        d="M11.354 4.646a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708l6-6a.5.5 0 0 1 .708 0z" />
+                                </svg>
+                            </button>
+                            <button class="btn btn-outline-secondary" id="submit">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                                    class="bi bi-arrow-up" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -78,190 +115,6 @@
             </div>
         </div>
     </div>
-    <script>
-        if ($.cookie('headerData') === undefined) {
-            $.cookie('headerData', '');
-        } else {
-            $('#headerData').val($.cookie('headerData'));
-        }
-        if ($.cookie('firstData') === undefined) {
-            $.cookie('firstData', '');
-        } else {
-            $('#firstData').val($.cookie('firstData'));
-        }
-
-        const windowHeight = window.innerHeight;
-        const headerHeight = document.querySelector(".card-header").offsetHeight;
-        const cardBody = document.querySelector(".card-body");
-        let cardBodyHeight = windowHeight - headerHeight - headerHeight/2;
-
-        const chatWindow = $("#chat-window");
-        const messageForm = $("#message-form");
-        const messageInput = $("#message-input");
-        const txtbox = $("#headerData, #firstData");
-        const stopbut = $("#stopbut");
-        const clearBtn = $('#clear-btn');
-        const submit = $('#submit');
-        const myProgressBar = $("#myProgressBar");
-        let originalHeight = messageInput.height();
-        let headerData = $("#headerData").val();
-        let firstData = $("#firstData").val();
-        let sendControl = true;
-        let stopsend = false;
-        let messages = [{ 'role': 'user', 'content': firstData }];
-
-        stopbut.hide();
-        myProgressBar.hide();
-
-        window.onload = function() {
-            autobox();
-        }
-
-        $("#setSave").on('click', function () {
-            headerData = $("#headerData").val();
-            firstData = $("#firstData").val();
-            messages[0].content = $("#firstData").val();
-            $.cookie('headerData', headerData);
-            $.cookie('firstData', firstData);
-        });
-
-        messageInput.on('input', function () {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight + 5) + 'px';
-            autobox();
-            window.scrollTo(0, document.body.scrollHeight);
-        }).trigger('input');
-
-        txtbox.height(100);
-
-        messageInput.keydown(function (event) {
-            if (event.keyCode == 13 && !event.shiftKey && sendControl) {
-                event.preventDefault();
-                submit.click();
-            }
-        });
-
-        stopbut.on('click', function (event) {
-            event.preventDefault();
-            submit.prop('disabled', false);
-            stopbut.hide();
-            myProgressBar.hide();
-            sendControl = true;
-            stopsend = true;
-        });
-
-        submit.on('click', function (event) {
-            event.preventDefault();
-            const message = messageInput.val();
-            messageInput.height(originalHeight);
-
-            if (!message) { return; }
-            else if (message == "q") {
-                messages = [{ 'role': 'user', 'content': firstData }];
-                messageInput.val('');
-                chatWindow.empty();
-                return;
-            }
-
-            messages = messages.slice(-6);
-            messages[0].content = firstData;
-            messages.push({ 'role': 'user', 'content': headerData + message });
-            console.log(messages);
-
-            submit.prop('disabled', true);
-            chatWindow.append("<li class='list-group-item bg-light'><b>我:</b> " + $("<div>").text(message).html() + "</li>").hide().fadeIn();
-            autobox();
-            window.scrollTo(0, document.body.scrollHeight);
-            sendControl = false;
-            myProgressBar.show();
-            stopbut.show();
-            messageInput.val("");
-
-            fetch('/get_response', {
-                method: 'POST',
-                body: new URLSearchParams({
-                    'message': message,
-                    'messages': JSON.stringify(messages)
-                })
-            })
-                .then(response => {
-                    if (stopsend) { return; }
-                    const reader = response.body.getReader();
-                    let decoder = new TextDecoder("utf-8");
-                    let result = '';
-                    let msgMd = '';
-                    let answer = randomString(16);
-
-                    const md = new markdownit({
-                        highlight: function (str, lang) {
-                            if (lang && hljs.getLanguage(lang)) {
-                                try { return hljs.highlight(lang, str).value; }
-                                catch (__) { }
-                            }
-                            return "";
-                        },
-                    });
-
-                    chatWindow.append("<li class='list-group-item' id='" + answer + "'><b>ChatGPT:</b></li>").hide().fadeIn();
-
-                    reader.read().then(function processText({ done, value }) {
-                        if (done) {
-                            $('#' + answer).html("<b>ChatGPT:</b> " + md.render(msgMd));
-                            submit.prop('disabled', false);
-                            stopbut.hide();
-                            myProgressBar.hide();
-                            sendControl = true;
-                            return;
-                        }
-
-                        if (stopsend) { return; }
-
-                        result = decoder.decode(value);
-                        const messages = result.split('');
-                        messages.forEach(msg => {
-                            msgMd += msg;
-                            $('#' + answer).html("<b>ChatGPT:</b> " + md.render(msgMd));
-                            autobox();
-                        });
-
-                        window.scrollTo(0, document.body.scrollHeight);
-                        result = messages.pop();
-                        reader.read().then(processText);
-                    });
-                })
-                .catch(error => {
-                    chatWindow.append("<li class='list-group-item text-danger'>发送消息失败</li>").hide().fadeIn();
-                    autobox();
-                    submit.prop('disabled', false);
-                    stopbut.hide();
-                    myProgressBar.hide();
-                    sendControl = true;
-                });
-
-            stopsend = false;
-        });
-
-        function autobox() {
-            if (chatWindow.height() + messageForm.height() >= cardBodyHeight) {
-                boxAuto = chatWindow.height() + messageForm.height() + headerHeight/2;
-                cardBody.style.height = boxAuto + "px";
-            } else {
-                cardBody.style.height = cardBodyHeight + "px";
-            }
-        }
-
-        function randomString(len) {
-            len = len || 32;
-            var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
-            var maxPos = $chars.length;
-            var pwd = '';
-            for (i = 0; i < len; i++) {
-                pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
-            }
-            return pwd;
-        }
-    </script>
-
 </body>
 
 </html>
