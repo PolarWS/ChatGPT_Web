@@ -5,8 +5,8 @@ import json
 from datetime import datetime
 
 # 设置OpenAI密钥和服务器端口
-openai.api_key = "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"   # 将此处的YOU_KEY替换为您的密钥
-serverPort = "7788"          # 将此处的PORT替换为您需要的端口号
+openai.api_key = "YOU_KEY"   # 将此处的YOU_KEY替换为您的密钥
+serverPort = "PORT"          # 将此处的PORT替换为您需要的端口号
 
 app = Flask(__name__)
 
