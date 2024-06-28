@@ -13,4 +13,4 @@ python main.py
 
 ### 网页外观
 
-![外观](https://ls-1252580753.cos.ap-chengdu.myqcloud.com/dfsafdfcvbg3432.jpeg)
+![外观](https://pan.polarws.moe/f/QpuM/chatgptWeb.jpeg)
